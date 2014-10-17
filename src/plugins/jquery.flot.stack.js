@@ -93,6 +93,10 @@ charts or filled areas).
                         newpoints.push(points[i + m]);
                     }
                     i += ps;
+                    if (otherpoints[j] == null) {
+                        fromgap = true;
+                        j += otherps;
+                    }
                 } else if (j >= otherpoints.length) {
                     // for lines, we can't use the rest of the points
                     if (!withlines) {
