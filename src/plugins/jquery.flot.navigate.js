@@ -111,6 +111,9 @@ can set the default in the options.
         }
 
         function onMouseWheel(e, delta) {
+            if (plot.getOptions().zoom.ctrlKey && !e.ctrlKey) {
+                return;
+            }
             e.preventDefault();
             onZoomClick(e, delta < 0);
             return false;
