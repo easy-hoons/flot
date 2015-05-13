@@ -3562,7 +3562,7 @@ Licensed under the MIT license.
                 }
             }
 
-            placeholder.trigger(eventname, [pos, item]);
+            placeholder.trigger(eventname, [pos, item, event]);
         }
 
         function triggerRedrawOverlay() {
