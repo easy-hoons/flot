@@ -2714,6 +2714,7 @@ Licensed under the MIT license.
         function drawSeries(series) {
             if (series.lines.show) {
                 drawSeriesLines(series);
+                drawSeriesPoints(series, true);
             }
             if (series.bars.show) {
                 drawSeriesBars(series);
@@ -3015,14 +3016,25 @@ Licensed under the MIT license.
             ctx.restore();
         }
 
-        function drawSeriesPoints(series) {
+        function drawSeriesPoints(series, onlyDrawIsolatedPoints) {
             function plotPoints(datapoints, radius, fillStyle, offset, shadow, axisx, axisy, symbol) {
                 var points = datapoints.points, ps = datapoints.pointsize;
 
+                var lastPointNull = true;
                 for (var i = 0; i < points.length; i += ps) {
                     var x = points[i], y = points[i + 1];
                     if (x == null || x < axisx.min || x > axisx.max || y < axisy.min || y > axisy.max) {
+                        lastPointNull = (x == null);
                         continue;
+                    }
+                    var nextPointNull = (i + ps >= points.length) || (points[i + ps] == null);
+                    var drawPoint = !onlyDrawIsolatedPoints || (lastPointNull && nextPointNull);
+                    lastPointNull = false;
+                    if (!drawPoint) {
+                        continue;
+                    }
+                    if (onlyDrawIsolatedPoints) {
+                        radius = 3;
                     }
 
                     ctx.beginPath();
