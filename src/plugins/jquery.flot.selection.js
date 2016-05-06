@@ -104,7 +104,7 @@ The plugin allso adds the following methods to the plot object:
                 plot.getPlaceholder().trigger("plotselecting", [getSelection()]);
 
                 // prevent the default action if it is a 'touch' action
-                if (selection.touch === true) {
+                if (selection.touch === true && !selectionIsReallyTouchScrolling()) {
                     e.preventDefault();
                 }
             }
@@ -227,11 +227,16 @@ The plugin allso adds the following methods to the plot object:
             pos.x = clamp(0, coordHolder.pageX - offset.left - plotOffset.left, plot.width());
             pos.y = clamp(0, coordHolder.pageY - offset.top - plotOffset.top, plot.height());
 
+            if (selection.touch) {
+                pos.touchX = coordHolder.clientX;
+                pos.touchY = coordHolder.clientY;
+            }
+
             if (o.selection.mode === "y") {
                 pos.x = pos === selection.first ? 0 : plot.width();
             }
 
-            if (o.selection.mode === "x") {
+            if (o.selection.mode === "x" || selection.touch) {
                 pos.y = pos === selection.first ? 0 : plot.height();
             }
         }
@@ -284,7 +289,7 @@ The plugin allso adds the following methods to the plot object:
 
             // backwards-compat stuff - to be removed in future
             if (!ranges[key]) {
-                axis = coord === "x" ? plot.getXAxes()[0] : plot.getYAxes()[0];
+                axis = coord === ("x" || selection.touch) ? plot.getXAxes()[0] : plot.getYAxes()[0];
                 from = ranges[coord + "1"];
                 to = ranges[coord + "2"];
             }
@@ -311,7 +316,7 @@ The plugin allso adds the following methods to the plot object:
                 selection.second.x = range.axis.p2c(range.to);
             }
 
-            if (o.selection.mode === "x") {
+            if (o.selection.mode === "x" || selection.touch) {
                 selection.first.y = 0;
                 selection.second.y = plot.height();
             } else {
@@ -327,7 +332,16 @@ The plugin allso adds the following methods to the plot object:
             }
         }
 
+        function selectionIsReallyTouchScrolling() {
+          var diffX = Math.abs(selection.second.touchX - selection.first.touchX);
+          var diffY = Math.abs(selection.second.touchY - selection.first.touchY);
+          return diffY > diffX;
+        }
+
         function selectionIsSane() {
+            if (selection.touch === true && selectionIsReallyTouchScrolling()) {
+                return false;
+            }
             var minSize = plot.getOptions().selection.minSize;
             return Math.abs(selection.second.x - selection.first.x) >= minSize &&
                 Math.abs(selection.second.y - selection.first.y) >= minSize;
