@@ -218,6 +218,7 @@ can set the default in the options.
                     }
                 };
 
+            var delta = minmax.x.max - minmax.x.min;
             // if zooming in when the mouse is close to an edge ('close' meaning
             // within 10% of the total width) then keep that same edge after
             // zoom (as opposed to ending up slightly inset from that edge)
@@ -226,9 +227,26 @@ can set the default in the options.
               if (xf > 0.9) {
                 // close to the right side
                 minmax.x.max = w;
+                minmax.x.min = minmax.x.max - delta;
               } else if (xf < 0.1) {
                 // close to the left side
                 minmax.x.min = 0;
+                minmax.x.max = delta;
+              }
+            }
+            // if zooming out when the mouse is close to an edge ('close' meaning
+            // within 10% of the total width) then keep that same edge after
+            // zoom (as opposed to ending up slightly outset from that edge)
+            if (amount < 1) {
+              // zooming out
+              if (xf > 0.9) {
+                // close to the right side
+                minmax.x.max = w;
+                minmax.x.min = minmax.x.max - delta;
+              } else if (xf < 0.1) {
+                // close to the left side
+                minmax.x.min = 0;
+                minmax.x.max = delta;
               }
             }
 
@@ -274,8 +292,8 @@ can set the default in the options.
                 if (borderGridLock) {
                   if (amount > 1) {
                     // zooming in
-                    var newMin = Math.round(min / borderGridLock) * borderGridLock;
-                    var newMax = Math.round(max / borderGridLock) * borderGridLock;
+                    var newMin = Math.floor(min / borderGridLock) * borderGridLock;
+                    var newMax = Math.ceil(max / borderGridLock) * borderGridLock;
                     if (newMin === opts.min && newMax === opts.max || newMin === newMax) {
                       // didn't move in, or moved in too much
                       if (opts.max - opts.min > borderGridLock) {
