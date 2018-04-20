@@ -846,6 +846,7 @@ Licensed under the MIT license.
                 drawOverlay: [],
                 shutdown: []
             },
+            mousedown = false,
             plot = this;
 
         // public functions
@@ -1666,6 +1667,7 @@ Licensed under the MIT license.
 
             // bind events
             if (options.grid.hoverable) {
+                eventHolder.mousedown(onMouseDown);
                 eventHolder.mousemove(onMouseMove);
 
                 // Use bind, rather than .mouseleave, because we officially
@@ -1674,6 +1676,8 @@ Licensed under the MIT license.
                 // was fixed somewhere around 1.3.x.  We can return to using
                 // .mouseleave when we drop support for 1.2.6.
                 eventHolder.bind("mouseleave", onMouseLeave);
+
+                $(document).mouseup(onMouseUp);
             }
 
             if (options.grid.clickable) {
@@ -1688,9 +1692,12 @@ Licensed under the MIT license.
                 clearTimeout(redrawTimeout);
             }
 
+            eventHolder.unbind("mousedown", onMouseDown);
             eventHolder.unbind("mousemove", onMouseMove);
             eventHolder.unbind("mouseleave", onMouseLeave);
             eventHolder.unbind("click", onClick);
+
+            $(document).unbind("mouseup", onMouseUp);
 
             executeHooks(hooks.shutdown, [eventHolder]);
         }
@@ -3514,15 +3521,23 @@ Licensed under the MIT license.
             return null;
         }
 
+        function onMouseDown(e) {
+            mousedown = true;
+        }
+
+        function onMouseUp(e) {
+            mousedown = false;
+        }
+
         function onMouseMove(e) {
-            if (options.grid.hoverable) {
+            if (options.grid.hoverable && !mousedown) {
                 triggerClickHoverEvent("plothover", e,
                                        function(s) { return s.hoverable !== false; });
             }
         }
 
         function onMouseLeave(e) {
-            if (options.grid.hoverable) {
+            if (options.grid.hoverable && !mousedown) {
                 triggerClickHoverEvent("plothover", e,
                                        function() { return false; });
             }
