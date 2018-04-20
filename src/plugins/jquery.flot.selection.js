@@ -82,6 +82,7 @@ The plugin allso adds the following methods to the plot object:
     function init(plot) {
 
         var selection = {
+                origin: { x: -1, y: -1 },
                 first: { x: -1, y: -1 },
                 second: { x: -1, y: -1 },
                 show: false,
@@ -232,12 +233,38 @@ The plugin allso adds the following methods to the plot object:
                 pos.touchY = coordHolder.clientY;
             }
 
+            if (pos === selection.first) {
+                selection.origin.x = pos.x;
+                selection.origin.y = pos.y;
+            }
+
             if (o.selection.mode === "y") {
                 pos.x = pos === selection.first ? 0 : plot.width();
             }
 
-            if (o.selection.mode === "x" || selection.touch) {
+            // TODO is it ok to remove || selection.touch ??
+            if (o.selection.mode === "x") {
                 pos.y = pos === selection.first ? 0 : plot.height();
+            }
+
+            if (o.selection.mode === "xory") {
+                if (pos === selection.first) {
+                    // selection mode "x"
+                    pos.y = 0;
+                } else {
+                    var diffY = Math.abs(pos.y - selection.origin.y);
+                    if (diffY > 2 * Math.abs(pos.x - selection.origin.x)) {
+                        // selection mode "y"
+                        selection.first.x = 0;
+                        selection.first.y = selection.origin.y;
+                        pos.x = plot.width();
+                    } else {
+                        // selection mode "x"
+                        selection.first.x = selection.origin.x;
+                        selection.first.y = 0;
+                        pos.y = plot.height();
+                    }
+                }
             }
         }
 
@@ -316,7 +343,7 @@ The plugin allso adds the following methods to the plot object:
                 selection.second.x = range.axis.p2c(range.to);
             }
 
-            if (o.selection.mode === "x" || selection.touch) {
+            if (o.selection.mode === "x" || o.selection.mode === "x+" || selection.touch) {
                 selection.first.y = 0;
                 selection.second.y = plot.height();
             } else {
