@@ -388,7 +388,7 @@ The plugin allso adds the following methods to the plot object:
         plot.hooks.bindEvents.push(function(plot, eventHolder) {
             var o = plot.getOptions();
             if (o.selection.mode != null) {
-                eventHolder.mousemove(onMouseMove);
+                $(document).mousemove(onMouseMove);
                 eventHolder.mousedown(onMouseDown);
                 eventHolder.bind("touchstart", function(e) {
                     // Using a touch device, disable mouse events to prevent
@@ -396,7 +396,7 @@ The plugin allso adds the following methods to the plot object:
                     eventHolder.unbind("mousedown", onMouseDown);
                     onMouseDown(e);
                 });
-                eventHolder.bind("touchmove", onMouseMove);
+                $(document).bind("touchmove", onMouseMove);
             }
         });
 
@@ -430,7 +430,7 @@ The plugin allso adds the following methods to the plot object:
         });
 
         plot.hooks.shutdown.push(function(plot, eventHolder) {
-            eventHolder.unbind("mousemove", onMouseMove);
+            $(document).unbind("mousemove", onMouseMove);
             eventHolder.unbind("mousedown", onMouseDown);
             if (mouseUpHandler) {
                 $(document).unbind("mouseup", mouseUpHandler);
