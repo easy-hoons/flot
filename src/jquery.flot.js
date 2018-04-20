@@ -846,7 +846,7 @@ Licensed under the MIT license.
                 drawOverlay: [],
                 shutdown: []
             },
-            mousedown = false,
+            mouseDownXY = null,
             plot = this;
 
         // public functions
@@ -1666,8 +1666,11 @@ Licensed under the MIT license.
         function bindEvents() {
 
             // bind events
-            if (options.grid.hoverable) {
+            if (options.grid.hoverable || options.grid.clickable) {
                 eventHolder.mousedown(onMouseDown);
+                $(document).mouseup(onMouseUp);
+            }
+            if (options.grid.hoverable) {
                 eventHolder.mousemove(onMouseMove);
 
                 // Use bind, rather than .mouseleave, because we officially
@@ -1676,12 +1679,6 @@ Licensed under the MIT license.
                 // was fixed somewhere around 1.3.x.  We can return to using
                 // .mouseleave when we drop support for 1.2.6.
                 eventHolder.bind("mouseleave", onMouseLeave);
-
-                $(document).mouseup(onMouseUp);
-            }
-
-            if (options.grid.clickable) {
-                eventHolder.click(onClick);
             }
 
             executeHooks(hooks.bindEvents, [eventHolder]);
@@ -1695,7 +1692,6 @@ Licensed under the MIT license.
             eventHolder.unbind("mousedown", onMouseDown);
             eventHolder.unbind("mousemove", onMouseMove);
             eventHolder.unbind("mouseleave", onMouseLeave);
-            eventHolder.unbind("click", onClick);
 
             $(document).unbind("mouseup", onMouseUp);
 
@@ -3522,30 +3518,35 @@ Licensed under the MIT license.
         }
 
         function onMouseDown(e) {
-            mousedown = true;
-        }
-
-        function onMouseUp(e) {
-            mousedown = false;
+            mouseDownXY = {
+                offsetX: e.offsetX,
+                offsetY: e.offsetY
+            };
         }
 
         function onMouseMove(e) {
-            if (options.grid.hoverable && !mousedown) {
+            if (options.grid.hoverable && mouseDownXY === null) {
                 triggerClickHoverEvent("plothover", e,
                                        function(s) { return s.hoverable !== false; });
             }
         }
 
         function onMouseLeave(e) {
-            if (options.grid.hoverable && !mousedown) {
+            if (options.grid.hoverable && mouseDownXY === null) {
                 triggerClickHoverEvent("plothover", e,
                                        function() { return false; });
             }
         }
 
-        function onClick(e) {
-            triggerClickHoverEvent("plotclick", e,
-                                   function(s) { return s.clickable !== false; });
+        function onMouseUp(e) {
+            if (options.grid.clickable
+                    && mouseDownXY != null
+                    && Math.abs(e.offsetX - mouseDownXY.offsetX) < 10
+                    && Math.abs(e.offsetY - mouseDownXY.offsetY) < 10) {
+                triggerClickHoverEvent("plotclick", e,
+                                       function(s) { return s.clickable !== false; });
+            }
+            mouseDownXY = null;
         }
 
         /**
