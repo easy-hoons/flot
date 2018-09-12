@@ -187,8 +187,8 @@ The plugin allso adds the following methods to the plot object:
             $.each(plot.getAxes(), function(name, axis) {
                 if (axis.used) {
                     var p1 = axis.c2p(c1[axis.direction]), p2 = axis.c2p(c2[axis.direction]);
-                    var from = Math.min(p1, p2);
-                    var to = Math.max(p1, p2);
+                    var from = Math.max(Math.min(p1, p2), axis.min);
+                    var to = Math.min(Math.max(p1, p2), axis.max);
                     // lock to grid
                     var borderGridLock = axis.options.borderGridLock;
                     if (borderGridLock) {
